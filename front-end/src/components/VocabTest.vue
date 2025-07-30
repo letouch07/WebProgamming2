@@ -1,22 +1,37 @@
 <template>
   <div class="ui container">
+    <!-- Language Selector (Before Start) -->
+    <div v-if="!hasStarted" style="margin: 30px 0; display: flex; align-items: center;">
+      <label for="language-select" style="color: #BADA55; margin-right: 10px;">Choose language:</label>
+      <select id="language-select" v-model="targetLanguage" class="ui dropdown" style="padding: 10px; font-size: 14px;">
+        <option value="german">German</option>
+        <option value="chinese">Chinese</option>
+      </select>
+    </div>
 
-    <div v-if="currentWord.english">
-      <p style="color: #BADA55;">Translate English word to:</p>
-      <div class="ui big label">{{ currentWord.english }}</div>
+    <!-- Start Test Button -->
+    <div v-if="!hasStarted" style="text-align: center; margin-top: 20px;">
+      <button class="ui green button" @click="startTest" style="font-size: 16px; padding: 14px;">Start Test</button>
+    </div>
+
+    <!-- Quiz Section -->
+    <div v-if="hasStarted && currentWord.english">
+      <p style="color: #BADA55;">Translate English word to {{ targetLanguage.charAt(0).toUpperCase() + targetLanguage.slice(1) }}:</p>
+      <div class="ui big label" style="margin-bottom: 10px;">{{ currentWord.english }}</div>
+      <p style="color: #BADA55; margin-top: 5px;">Time left: {{ timeLeft }}s</p>
 
       <div class="ui input" style="margin-top: 10px; width: 100%;">
-  <input
-    v-model="userInput"
-    placeholder="Enter German or Chinese..."
-    @keyup.enter="checkAnswer"
-    style="padding: 14px; font-size: 16px; height: 50px; width: 100%;"
-  />
-</div>
-
+        <input
+          v-model="userInput"
+          placeholder="Enter translation..."
+          @keyup.enter="checkAnswer"
+          :disabled="!canAnswer"
+          style="padding: 14px; font-size: 16px; height: 50px; width: 100%;"
+        />
+      </div>
 
       <div style="margin-top: 10px;">
-        <button class="ui green button" @click="checkAnswer" :disabled="!userInput">Submit</button>
+        <button class="ui green button" @click="checkAnswer" :disabled="!userInput || !canAnswer">Submit</button>
         <button class="ui blue button" v-if="feedback" @click="nextWord">Next</button>
       </div>
 
@@ -30,7 +45,7 @@
       <button class="ui red button" v-if="total > 0" @click="endTest">End Test & Save</button>
     </div>
 
-    <div v-else>
+    <div v-else-if="hasStarted && !currentWord.english">
       <p>Loading words...</p>
     </div>
 
@@ -62,7 +77,7 @@
 import { api } from '../helpers/helpers';
 
 export default {
-  name: 'test',
+  name: 'TestWithLanguageTimer',
   data() {
     return {
       words: [],
@@ -71,14 +86,17 @@ export default {
       score: 0,
       total: 0,
       feedback: '',
-      scoreHistory: []
+      scoreHistory: [],
+      targetLanguage: 'german',
+      timeLeft: 30,
+      timerId: null,
+      canAnswer: false,
+      hasStarted: false
     };
   },
   async mounted() {
     try {
       this.words = await api.getWords();
-      this.shuffleAndNext();
-
       const savedHistory = localStorage.getItem('scoreHistory');
       if (savedHistory) {
         this.scoreHistory = JSON.parse(savedHistory);
@@ -87,26 +105,59 @@ export default {
       console.error('Failed to fetch words:', error);
     }
   },
+  beforeDestroy() {
+    this.clearTimer();
+  },
   methods: {
+    startTest() {
+      this.hasStarted = true;
+      this.shuffleAndNext();
+    },
     shuffleAndNext() {
       this.userInput = '';
       this.feedback = '';
+      this.canAnswer = true;
       const index = Math.floor(Math.random() * this.words.length);
       this.currentWord = this.words[index];
+      this.startTimer();
+    },
+    startTimer() {
+      this.clearTimer();
+      this.timeLeft = 30;
+      this.timerId = setInterval(() => {
+        if (this.timeLeft > 0) {
+          this.timeLeft--;
+        } else {
+          this.timeUp();
+        }
+      }, 1000);
+    },
+    clearTimer() {
+      if (this.timerId) {
+        clearInterval(this.timerId);
+        this.timerId = null;
+      }
+    },
+    timeUp() {
+      this.canAnswer = false;
+      const correct = this.currentWord[this.targetLanguage].trim();
+      this.feedback = `❌ Time's up! Correct answer: ${correct}`;
+      this.total++;
+      this.clearTimer();
     },
     checkAnswer() {
+      if (!this.canAnswer) return;
+      this.clearTimer();
       const input = this.userInput.trim().toLowerCase();
-      const german = this.currentWord.german.trim().toLowerCase();
-      const chinese = this.currentWord.chinese.trim().toLowerCase();
-
-      if (input === german || input === chinese) {
+      const answer = this.currentWord[this.targetLanguage].trim().toLowerCase();
+      if (input === answer) {
         this.feedback = '✅ Correct!';
         this.score++;
       } else {
-        this.feedback = `❌ Incorrect. Correct answers: ${german} / ${chinese}`;
+        this.feedback = `❌ Incorrect. Correct answer: ${this.currentWord[this.targetLanguage]}`;
       }
-
       this.total++;
+      this.canAnswer = false;
     },
     nextWord() {
       this.shuffleAndNext();
@@ -120,12 +171,11 @@ export default {
       this.scoreHistory.unshift(record);
       localStorage.setItem('scoreHistory', JSON.stringify(this.scoreHistory));
 
-      // Reset test
       this.score = 0;
       this.total = 0;
       this.feedback = '';
       this.userInput = '';
-      this.shuffleAndNext();
+      this.hasStarted = false;
       alert('Test session saved!');
     },
     clearHistory() {
@@ -139,7 +189,6 @@ export default {
 };
 </script>
 
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -148,31 +197,10 @@ export default {
   box-sizing: border-box;
 }
 
-h2 {
-  color: #BADA55;
-  background-color: #2a2a2a;
-  border: 3px solid #BADA55;
-  padding: 10px;
-  font-size: 12px;
-  text-align: center;
-  margin-bottom: 20px;
-  border-radius: 10px;
-  text-shadow: 1px 1px #000;
-}
-
-.ui.labeled.input .ui.label {
-  background-color: #333 !important;
-  color: #BADA55 !important;
-  border: 2px solid #BADA55 !important;
-}
-
 .ui.input input {
   background-color: #1a1a1a;
   color: #BADA55;
   border: 2px solid #BADA55;
-  padding: 10px;
-  font-size: 10px;
-  width: 100%;
 }
 
 button.ui.button {
@@ -180,7 +208,6 @@ button.ui.button {
   font-size: 10px;
   text-transform: uppercase;
   font-weight: bold;
-  font-family: 'Press Start 2P', cursive;
 }
 
 button.positive.ui.button {
@@ -199,35 +226,28 @@ button.ui.orange.button {
   border: 2px solid #e65100;
 }
 
-.results {
-  margin: 25px auto;
-  padding: 15px;
-  border-radius: 5px;
-  font-size: 10px;
+.ui.green.button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.ui.blue.button {
+  background-color: #2196F3;
+  color: white;
+}
+
+.ui.red.button {
+  background-color: #F44336;
+  color: white;
+}
+
+.ui.green.message {
+  background-color: #2e7d32 !important;
   color: #fff;
 }
 
-.error {
-  border: 2px solid #d32f2f;
-  background-color: #b71c1c;
+.ui.red.message {
+  background-color: #b71c1c !important;
   color: #fff;
 }
-
-.success {
-  border: 2px solid #2e7d32;
-  background-color: #1b5e20;
-  color: #fff;
-}
-
-.ui.input input {
-  background-color: #1a1a1a;
-  color: #BADA55;
-  border: 2px solid #BADA55;
-  padding: 10px;
-  font-size: 10px;
-  width: 100%;
-}
-
-
-
 </style>

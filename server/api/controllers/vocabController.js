@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 const Vocab = mongoose.model('Vocab');
+const translate = require('google-translate-api-x');
 
+
+//============================================//
+//============================================//
 exports.list_all_words = (req, res) => {
   Vocab.find({}, (err, words) => {
     if (err) res.send(err);
@@ -44,3 +48,15 @@ exports.delete_a_word = (req, res) => {
     });
   });
 };
+
+exports.translateText = async (req, res) => {
+  try {
+    const { text, target } = req.body;
+    const result = await translate(text, { to: target });
+    res.json({ translation: result.text });
+  } catch (err) {
+    console.error('Translation error:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+

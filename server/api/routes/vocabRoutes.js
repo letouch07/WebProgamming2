@@ -1,5 +1,6 @@
 const vocabBuilder = require('../controllers/vocabController');
-
+console.log("translateText:", vocabBuilder.translateText);
+console.log("Toàn bộ vocabBuilder:", vocabBuilder);
 module.exports = app => {
   app
     .route('/words')
@@ -11,4 +12,9 @@ module.exports = app => {
     .get(vocabBuilder.read_a_word)
     .put(vocabBuilder.update_a_word)
     .delete(vocabBuilder.delete_a_word);
+  app
+    .route('/translate')
+    .post(vocabBuilder.translateText);
 };
+
+

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Dictionary by PDK</h1>
+    <h1>📚Dictionary by PDK</h1>
     <table id="words" class="ui celled compact table">
       <thead>
         <tr>

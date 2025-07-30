@@ -6,6 +6,7 @@
         <router-link to="/words" exact class="item">📖 Words</router-link>
         <router-link to="/words/new" class="item">➕ New</router-link>
         <router-link to="/test" class="item">🎮 Test</router-link>
+        <router-link to="/translate" class="item">🌐 Translate</router-link>
       </div>
     </div>
 
