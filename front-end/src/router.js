@@ -45,7 +45,7 @@ export default new Router({
       component: Test
     },
     {
-      path: '/translate',         // ← NEW ROUTE
+      path: '/translate',         
       name: 'translate',
       component: Translate
     }
