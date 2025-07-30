@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div class="navbar">
-      <img class="logo" src="/logo-mc.png" alt="Minecraft Logo">
+      <img class="logo" src="/logo-mc.png">
       <div class="menu-links">
         <router-link to="/words" exact class="item">📖 Words</router-link>
         <router-link to="/words/new" class="item">➕ New</router-link>

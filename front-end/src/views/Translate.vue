@@ -13,7 +13,7 @@
       <option value="de">German</option>
       <option value="zh-CN">Chinese (Simplified)</option>
       <option value="vi">Vietnamese</option>
-      <!-- thêm ngôn ngữ bạn muốn -->
+      
     </select>
 
     <button class="ui primary button" @click="doTranslate" :disabled="!text">

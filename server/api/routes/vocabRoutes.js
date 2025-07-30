@@ -1,6 +1,6 @@
 const vocabBuilder = require('../controllers/vocabController');
-console.log("translateText:", vocabBuilder.translateText);
-console.log("Toàn bộ vocabBuilder:", vocabBuilder);
+console.log("Function of vocabBuilder:", vocabBuilder);//Test function is working or not//
+
 module.exports = app => {
   app
     .route('/words')
