@@ -7,12 +7,12 @@
       placeholder="Input text to translate"
       rows="4"
     ></textarea>
-     <p>Choost language to translate</p>
+     <p>Choose language to translate:</p>
     <select v-model="target">
       <option value="en">English</option>
       <option value="de">German</option>
       <option value="zh-CN">Chinese (Simplified)</option>
-      <option value="vi">Vietnamese</option>
+       <!-- add more language here -->
       
     </select>
 
@@ -35,7 +35,7 @@ export default {
   data() {
     return {
       text: '',
-      target: 'vi',
+      target: 'en',
       translation: ''
     };
   },
@@ -44,12 +44,13 @@ export default {
       try {
         const res = await axios.post('http://localhost:3000/translate', {
           text: this.text,
+           source: 'auto',
           target: this.target
         });
         this.translation = res.data.translation;
       } catch (err) {
         console.error(err);
-        alert('Dịch thất bại');
+        alert('Failed to translate. PLease try again.');
       }
     }
   }

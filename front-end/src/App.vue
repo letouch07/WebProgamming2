@@ -121,9 +121,9 @@ html, body, #app {
 }
 
 #app {
-  background-image: url('https://wallpapersok.com/images/hd/4k-minecraft-plethora-of-trees-nycjpsxqlnpplpxy.jpg');
+  background-image: url('https://wallpapercave.com/wp/wp8643134.jpg');
   background-size: cover;
-  background-position: center;
+  background-position: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
 }

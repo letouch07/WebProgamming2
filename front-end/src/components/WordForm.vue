@@ -38,7 +38,7 @@
       return {
         english: '',
         german: '',
-        china: ''
+        chinese: ''
       };
     }
   }
@@ -50,7 +50,7 @@
    },
    methods: {
      onSubmit: function() {
-      if (this.word.english === '' || this.word.german === '') {
+      if (this.word.english === '' || this.word.german === '' || this.word.chinese === '') {
       this.errorsPresent = true;
       } else {
       this.$emit('createOrUpdate', this.word);
